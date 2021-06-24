@@ -10,7 +10,6 @@ inputs:
   support_typescript:
     description: Should tsconfig.json be honored when traversing dependencies
     default: false
-outputs:
 runs:
   using: 'node12'
   main: 'src/action.js'

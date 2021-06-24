@@ -24,6 +24,7 @@ async function installCodesee() {
 async function runCodeseeWithConfig(config) {
     const runExitCode = await exec.exec("node", [
         'node_modules/.bin/codesee',
+        "map"
     ])
 
     return runExitCode;
