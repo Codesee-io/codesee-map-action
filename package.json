@@ -8,7 +8,8 @@
     "@actions/exec": "^1.1.0"
   },
   "devDependencies": {
-    "@vercel/ncc": "vercel/ncc"
+    "@vercel/ncc": "vercel/ncc",
+    "simple-git": "^2.40.0"
   },
   "scripts": {
     "build": "ncc build src/action.js --license licenses.txt"

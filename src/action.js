@@ -1,5 +1,6 @@
 const core = require("@actions/core");
 const exec = require("@actions/exec");
+const simpleGit = require("simple-git");
 
 function setupEnv() {
     core.setSecret('api_token');
@@ -17,17 +18,59 @@ function getConfig() {
     }
 }
 
+async function getRepoOrigin() {
+    const git = simpleGit(".");
+    const remotes = await git.getRemotes(true);
+    const maybeOrigin = remotes.filter(r => r.name === 'origin');
+    if (maybeOrigin.length !== 1) {
+        throw new Error("Unable to determine origin remote")
+    }
+
+    const origin = maybeOrigin[0].refs.fetch || maybeOrigin[0].refs.push;
+
+    // origins from github look like `git@github.com:<owner name>/<repo name>`
+    // and we only care about owner name and repo name to be able to find their
+    // records
+    return origin.replace('git@github.com:', '');
+}
+
 async function installCodesee() {
     return await exec.exec("npm", ["install", "codesee"]);
 }
 
-async function runCodeseeWithConfig(config) {
-    const runExitCode = await exec.exec("node", [
-        'node_modules/.bin/codesee',
-        "map"
-    ])
+async function runCodeseeMap(config) {
+    const args = [
+        "node_modules/.bin/codesee",
+        "map",
+        "-o",
+        "codesee.map.json",
+    ];
+
+    if (config.webpackConfigPath) {
+        args.push("-w", config.webpackConfigPath);
+    }
+    if (config.supportTypescript) {
+        args.push("--typescript");
+    }
+    const runExitCode = await exec.exec("node", args)
 
     return runExitCode;
+}
+
+async function runCodeseeMapUpload(config, origin) {
+    const args = [
+        "node_modules/.bin/codesee",
+        "upload",
+        "--map",
+        "--repo", repo,
+        config.apiToken,
+        "codesee.map.json",
+    ];
+
+    const runExitCode = await exec.exec("node", args)
+
+    return runExitCode;
+
 }
 
 async function main() {
@@ -38,9 +81,11 @@ async function main() {
     core.debug(config);
 
     await core.group('Install codesee-cli', installCodesee);
+    const origin = await core.group('Get Repo Origin', getRepoOrigin);
     core.endGroup();
 
-    await core.group('Generate Map Data', runCodeseeWithConfig(config))
+    await core.group('Generate Map Data', runCodeseeMap(config))
+    await core.group('Upload Map to Codesee Server', runCodeseeMapUpload(config, origin))
 }
 
 main().then(() => {
