@@ -1,0 +1,16 @@
+{
+  "name": "codesee-map-action",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "license": "Unlicensed",
+  "dependencies": {
+    "@actions/core": "^1.4.0",
+    "@actions/exec": "^1.1.0"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "vercel/ncc"
+  },
+  "scripts": {
+    "build": "ncc build src/action.js --license licenses.txt"
+  }
+}
