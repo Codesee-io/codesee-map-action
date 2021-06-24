@@ -28,10 +28,11 @@ async function getRepoOrigin() {
 
     const originFullUrl = maybeOrigin[0].refs.fetch || maybeOrigin[0].refs.push;
 
-    // origins from github look like `git@github.com:<owner name>/<repo name>`
+    // origins from github look like either `git@github.com:<owner name>/<repo name>`
+    // or https://github.com/<owner name>/<repo name>`
     // and we only care about owner name and repo name to be able to find their
     // records
-    const origin = originFullUrl.replace('git@github.com:', '');
+    const origin = originFullUrl.replace('git@github.com:', '').replace('https://github.com/', '');
     core.info(`Using github repo ${origin} for the origin`)
     return origin;
 }
