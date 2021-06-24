@@ -32,7 +32,7 @@ async function getRepoOrigin() {
     // and we only care about owner name and repo name to be able to find their
     // records
     const origin = originFullUrl.replace('git@github.com:', '');
-    core.log(`Using github repo ${origin} for the origin`)
+    core.info(`Using github repo ${origin} for the origin`)
     return origin;
 }
 
