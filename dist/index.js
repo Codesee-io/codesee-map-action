@@ -7850,8 +7850,8 @@ async function main() {
     const origin = await core.group('Get Repo Origin', getRepoOrigin);
     core.endGroup();
 
-    await core.group('Generate Map Data', runCodeseeMap(config))
-    await core.group('Upload Map to Codesee Server', runCodeseeMapUpload(config, origin))
+    await core.group('Generate Map Data', async () => runCodeseeMap(config))
+    await core.group('Upload Map to Codesee Server', async () => runCodeseeMapUpload(config, origin))
 }
 
 main().then(() => {
