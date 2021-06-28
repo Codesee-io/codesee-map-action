@@ -38,7 +38,7 @@ async function getRepoOrigin() {
 }
 
 async function installCodesee() {
-    return await exec.exec("npm", ["install", "codesee"]);
+    return await exec.exec("yarn", ["add", "codesee"]);
 }
 
 async function runCodeseeMap(config) {
