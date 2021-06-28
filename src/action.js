@@ -43,7 +43,6 @@ async function installCodesee() {
 
 async function runCodeseeMap(config) {
     const args = [
-        "node_modules/.bin/codesee",
         "map",
         "-o",
         "codesee.map.json",
@@ -55,14 +54,13 @@ async function runCodeseeMap(config) {
     if (config.supportTypescript) {
         args.push("--typescript");
     }
-    const runExitCode = await exec.exec("node", args)
+    const runExitCode = await exec.exec("node_modules/.bin/codesee", args)
 
     return runExitCode;
 }
 
 async function runCodeseeMapUpload(config, origin) {
     const args = [
-        "node_modules/.bin/codesee",
         "upload",
         "--map",
         "--repo", repo,
@@ -70,7 +68,7 @@ async function runCodeseeMapUpload(config, origin) {
         "codesee.map.json",
     ];
 
-    const runExitCode = await exec.exec("node", args)
+    const runExitCode = await exec.exec("node_modules/.bin/codesee", args)
 
     return runExitCode;
 
@@ -93,5 +91,6 @@ async function main() {
 
 main().then(() => {
 }).catch(err => {
-    core.setFailed(`CodeSee Map failed: ${err}`);    
+    core.setFailed(`CodeSee Map failed: ${err}
+    ${err.stack}`);    
 })
