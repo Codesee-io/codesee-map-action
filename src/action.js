@@ -63,7 +63,7 @@ async function runCodeseeMapUpload(config, origin) {
     const args = [
         "upload",
         "--map",
-        "--repo", repo,
+        "--repo", origin,
         config.apiToken,
         "codesee.map.json",
     ];
