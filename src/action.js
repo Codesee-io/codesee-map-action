@@ -44,12 +44,8 @@ async function getRepoOrigin() {
   return origin;
 }
 
-async function installCodesee() {
-  return await exec.exec("yarn", ["add", "codesee"]);
-}
-
 async function runCodeseeMap(config) {
-  const args = ["map", "-o", "codesee.map.json"];
+  const args = ["codesee", "map", "-o", "codesee.map.json"];
 
   if (config.webpackConfigPath) {
     args.push("-w", config.webpackConfigPath);
@@ -57,13 +53,14 @@ async function runCodeseeMap(config) {
   if (config.supportTypescript) {
     args.push("--typescript");
   }
-  const runExitCode = await exec.exec("node_modules/.bin/codesee", args);
+  const runExitCode = await exec.exec("npx", args);
 
   return runExitCode;
 }
 
 async function runCodeseeMapUpload(config, origin) {
   const args = [
+    "codesee",
     "upload",
     "--type",
     "map",
@@ -74,7 +71,7 @@ async function runCodeseeMapUpload(config, origin) {
     "codesee.map.json",
   ];
 
-  const runExitCode = await exec.exec("node_modules/.bin/codesee", args);
+  const runExitCode = await exec.exec("npx", args);
 
   return runExitCode;
 }
@@ -86,7 +83,6 @@ async function main() {
   core.debug("CONFIG: ");
   core.debug(config);
 
-  await core.group("Install codesee-cli", installCodesee);
   const origin = await core.group("Get Repo Origin", getRepoOrigin);
   core.endGroup();
 
