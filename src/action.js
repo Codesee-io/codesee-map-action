@@ -44,10 +44,6 @@ async function getRepoOrigin() {
   return origin;
 }
 
-async function installCodesee() {
-  return await exec.exec("npx", "codesee");
-}
-
 async function runCodeseeMap(config) {
   const args = ["codesee", "map", "-o", "codesee.map.json"];
 
