@@ -14,12 +14,14 @@ function getConfig() {
   const supportTypescript = core.getBooleanInput("support_typescript", {
     required: false,
   });
+  const githubRef = core.getInput("github_ref", { required: true });
 
   return {
     apiToken,
     webpackConfigPath:
       webpackConfigPath === "__NULL__" ? undefined : webpackConfigPath,
     supportTypescript,
+    githubRef,
   };
 }
 
@@ -68,6 +70,8 @@ async function runCodeseeMapUpload(config, origin) {
     `https://github.com/${origin}`,
     "-a",
     config.apiToken,
+    "-b",
+    config.githubRef,
     "codesee.map.json",
   ];
 
