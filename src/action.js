@@ -95,6 +95,7 @@ async function main() {
 main()
   .then(() => {})
   .catch((err) => {
-    core.setFailed(`CodeSee Map failed: ${err}
+    const color = "\u001b[38;255;255;0m";
+    core.info(`${color}CodeSee Map failed: ${err}
     ${err.stack}`);
   });
