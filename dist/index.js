@@ -7860,8 +7860,7 @@ async function main() {
 main()
   .then(() => {})
   .catch((err) => {
-    const color = "\u001b[38;255;255;0m";
-    core.info(`${color}CodeSee Map failed: ${err}
+    core.info(`\u001b[38;255;255;0;0mCodeSee Map failed: ${err}
     ${err.stack}`);
   });
 
