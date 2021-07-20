@@ -7711,7 +7711,7 @@ async function main() {
 main()
   .then(() => {})
   .catch((err) => {
-    core.setFailed(`CodeSee Map failed: ${err}
+    core.info(`CodeSee Map failed: ${err}
     ${err.stack}`);
   });
 
