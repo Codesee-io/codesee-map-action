@@ -95,6 +95,6 @@ async function main() {
 main()
   .then(() => {})
   .catch((err) => {
-    core.info(`\u001b[38;255;255;0;0mCodeSee Map failed: ${err}
+    core.info(`CodeSee Map failed: ${err}
     ${err.stack}`);
   });
