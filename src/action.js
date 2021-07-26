@@ -70,7 +70,7 @@ async function runCodeseeMapUpload(config, origin) {
     `https://github.com/${origin}`,
     "-a",
     config.apiToken,
-    "-b",
+    "-f",
     config.githubRef,
     "codesee.map.json",
   ];
