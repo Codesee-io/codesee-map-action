@@ -13,3 +13,4 @@ jobs:
         uses: ./
         with:
           api_token: Foo
+          github_ref: ${{ github.ref }}
