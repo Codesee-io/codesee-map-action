@@ -14,7 +14,7 @@ function getConfig() {
   const supportTypescript = core.getBooleanInput("support_typescript", {
     required: false,
   });
-  const githubRef = core.getInput("github_ref", { required: true });
+  const githubRef = core.getInput("github_ref", { required: false });
 
   return {
     apiToken,
@@ -61,6 +61,7 @@ async function runCodeseeMap(config) {
 }
 
 async function runCodeseeMapUpload(config, origin) {
+  const refArguments = config.githubRef ? ["-f", config.githubRef] : [];
   const args = [
     "codesee",
     "upload",
@@ -70,8 +71,7 @@ async function runCodeseeMapUpload(config, origin) {
     `https://github.com/${origin}`,
     "-a",
     config.apiToken,
-    "-f",
-    config.githubRef,
+    ...refArguments,
     "codesee.map.json",
   ];
 
