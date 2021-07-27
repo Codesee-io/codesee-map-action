@@ -10,6 +10,9 @@ inputs:
   support_typescript:
     description: Should tsconfig.json be honored when traversing dependencies
     default: false
+  github_ref:
+    description: The github ref (value of $GITHUB_REF) which references the branch name being processed
+    required: true
 runs:
   using: 'node12'
   main: 'dist/index.js'
