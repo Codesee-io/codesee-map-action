@@ -7703,6 +7703,8 @@ async function main() {
   core.debug("CONFIG: ");
   core.debug(config);
 
+  console.log(`GITHUB_EVENT_NAME: ${process.env.GITHUB_EVENT_NAME}`);
+  console.log(`GITHUB_EVENT_PATH: ${process.env.GITHUB_EVENT_PATH}`);
   core.debug(`GITHUB_EVENT_NAME: ${process.env.GITHUB_EVENT_NAME}`);
   core.debug(`GITHUB_EVENT_PATH: ${process.env.GITHUB_EVENT_PATH}`);
 
