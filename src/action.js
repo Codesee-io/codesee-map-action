@@ -87,6 +87,9 @@ async function main() {
   core.debug("CONFIG: ");
   core.debug(config);
 
+  core.debug(`GITHUB_EVENT_NAME: ${process.env.GITHUB_EVENT_NAME}`);
+  core.debug(`GITHUB_EVENT_PATH: ${process.env.GITHUB_EVENT_PATH}`);
+
   const origin = await core.group("Get Repo Origin", getRepoOrigin);
   core.endGroup();
 
