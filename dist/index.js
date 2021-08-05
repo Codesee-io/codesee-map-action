@@ -7614,9 +7614,26 @@ module.exports = require("util");
 var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
+const fs = __nccwpck_require__(5747);
 const core = __nccwpck_require__(5949);
 const exec = __nccwpck_require__(3890);
 const simpleGit = __nccwpck_require__(7489);
+
+/**
+ * Asynchronously reads the contents of a file.
+ * @param {string} filePath - The path of the file you want to read.
+ * @returns {Promise<string>} The contents of the file as a string.
+ */
+async function readFile(filePath) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(filePath, { encoding: "utf-8" }, (err, data) => {
+      if (err) {
+        return reject(err);
+      }
+      resolve(data.toString());
+    });
+  });
+}
 
 function setupEnv() {
   core.setSecret("api_token");
@@ -7662,6 +7679,22 @@ async function getRepoOrigin() {
   return origin;
 }
 
+async function runPreflight() {
+  if (process.env.GITHUB_EVENT_NAME === "pull_request") {
+    const eventData = JSON.parse(await readFile(process.env.GITHUB_EVENT_PATH));
+    const headRepoFullName = eventData.pull_request.head.repo.full_name;
+    const baseRepoFullName = eventData.pull_request.base.repo.full_name;
+
+    if (headRepoFullName !== baseRepoFullName) {
+      core.info(`Pull request head repository ${headRepoFullName} differs from base repository ${baseRepoFullName}. Not running.`);
+      return false;
+    }
+  }
+
+  core.info("Passed preflight checks.");
+  return true;
+}
+
 async function runCodeseeMap(config) {
   const args = ["codesee", "map", "-o", "codesee.map.json"];
 
@@ -7703,13 +7736,16 @@ async function main() {
   core.debug("CONFIG: ");
   core.debug(config);
 
-  console.log(`GITHUB_EVENT_NAME: ${process.env.GITHUB_EVENT_NAME}`);
-  console.log(`GITHUB_EVENT_PATH: ${process.env.GITHUB_EVENT_PATH}`);
-  core.debug(`GITHUB_EVENT_NAME: ${process.env.GITHUB_EVENT_NAME}`);
-  core.debug(`GITHUB_EVENT_PATH: ${process.env.GITHUB_EVENT_PATH}`);
-
   const origin = await core.group("Get Repo Origin", getRepoOrigin);
+  const passesPreflight = await core.group(
+    "Check If Action Should Run",
+    runPreflight
+  );
   core.endGroup();
+
+  if (!passesPreflight) {
+    return;
+  }
 
   await core.group("Generate Map Data", async () => runCodeseeMap(config));
   await core.group("Upload Map to Codesee Server", async () =>
