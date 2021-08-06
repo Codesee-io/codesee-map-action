@@ -67,12 +67,21 @@ async function getRepoOrigin() {
   return origin;
 }
 
-async function runPreflight() {
+async function getEventData() {
   const githubEventName = process.env.GITHUB_EVENT_NAME;
   let githubEventData = {};
 
-  if (githubEventName === "pull_request") {
+  try {
     githubEventData = JSON.parse(await readFile(process.env.GITHUB_EVENT_PATH));
+  } catch (e) {
+    // No-op, we just return empty githubEventData
+  }
+
+  return { githubEventName, githubEventData };
+}
+
+async function runPreflight(githubEventName, githubEventData) {
+  if (githubEventName === "pull_request") {
     const headRepoFullName = githubEventData.pull_request.head.repo.full_name;
     const baseRepoFullName = githubEventData.pull_request.base.repo.full_name;
 
@@ -80,11 +89,11 @@ async function runPreflight() {
       core.info(
         `Pull request head repository ${headRepoFullName} differs from base repository ${baseRepoFullName}. Not running.`
       );
-      return { passedPreflight: false, githubEventName, githubEventData };
+      return false;
     }
   }
 
-  return { passedPreflight: true, githubEventName, githubEventData };
+  return true;
 }
 
 async function runCodeseeMap(config) {
@@ -141,8 +150,11 @@ async function main() {
   core.debug(config);
 
   const origin = await core.group("Get Repo Origin", getRepoOrigin);
-  const { passedPreflight, githubEventName, githubEventData } =
-    await core.group("Check If Action Should Run", runPreflight);
+  const { githubEventName, githubEventData } = await getEventData();
+  const passedPreflight = await core.group(
+    "Check If Action Should Run",
+    async () => runPreflight(githubEventName, githubEventData)
+  );
   core.endGroup();
 
   if (!passedPreflight) {
