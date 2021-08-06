@@ -7647,16 +7647,17 @@ function getConfig() {
   const supportTypescript = core.getBooleanInput("support_typescript", {
     required: false,
   });
-  core.info(`GITHUB_REF: ${process.env.GITHUB_REF}`);
-  core.info(`GITHUB_BASE_REF: ${process.env.GITHUB_BASE_REF}`);
-  core.info(`GITHUB_HEAD_REF: ${process.env.GITHUB_HEAD_REF}`);
-  const githubRef = core.getInput("github_ref", { required: false });
+  const githubRef =
+    process.env.GITHUB_HEAD_REF ||
+    core.getInput("github_ref", { required: false });
+  const githubBaseRef = process.env.GITHUB_BASE_REF;
 
   return {
     apiToken,
     webpackConfigPath:
       webpackConfigPath === "__NULL__" ? undefined : webpackConfigPath,
     supportTypescript,
+    githubBaseRef,
     githubRef,
   };
 }
@@ -7683,18 +7684,23 @@ async function getRepoOrigin() {
 }
 
 async function runPreflight() {
-  if (process.env.GITHUB_EVENT_NAME === "pull_request") {
-    const eventData = JSON.parse(await readFile(process.env.GITHUB_EVENT_PATH));
-    const headRepoFullName = eventData.pull_request.head.repo.full_name;
-    const baseRepoFullName = eventData.pull_request.base.repo.full_name;
+  const githubEventName = process.env.GITHUB_EVENT_NAME;
+  let githubEventData = {};
+
+  if (githubEventName === "pull_request") {
+    githubEventData = JSON.parse(await readFile(process.env.GITHUB_EVENT_PATH));
+    const headRepoFullName = githubEventData.pull_request.head.repo.full_name;
+    const baseRepoFullName = githubEventData.pull_request.base.repo.full_name;
 
     if (headRepoFullName !== baseRepoFullName) {
-      core.info(`Pull request head repository ${headRepoFullName} differs from base repository ${baseRepoFullName}. Not running.`);
-      return false;
+      core.info(
+        `Pull request head repository ${headRepoFullName} differs from base repository ${baseRepoFullName}. Not running.`
+      );
+      return { passedPreflight: false, githubEventName, githubEventData };
     }
   }
 
-  return true;
+  return { passedPreflight: true, githubEventName, githubEventData };
 }
 
 async function runCodeseeMap(config) {
@@ -7711,8 +7717,20 @@ async function runCodeseeMap(config) {
   return runExitCode;
 }
 
-async function runCodeseeMapUpload(config, origin) {
-  const refArguments = config.githubRef ? ["-f", config.githubRef] : [];
+async function runCodeseeMapUpload(
+  config,
+  origin,
+  githubEventName,
+  githubEventData
+) {
+  const additionalArguments = config.githubRef ? ["-f", config.githubRef] : [];
+
+  if (githubEventName === "pull_request") {
+    additionalArguments.push("-b", config.githubBaseRef);
+    additionalArguments.push("-s", githubEventData.pull_request.base.sha);
+    additionalArguments.push("-p", githubEventData.number.toString());
+  }
+
   const args = [
     "codesee",
     "upload",
@@ -7722,7 +7740,7 @@ async function runCodeseeMapUpload(config, origin) {
     `https://github.com/${origin}`,
     "-a",
     config.apiToken,
-    ...refArguments,
+    ...additionalArguments,
     "codesee.map.json",
   ];
 
@@ -7739,19 +7757,17 @@ async function main() {
   core.debug(config);
 
   const origin = await core.group("Get Repo Origin", getRepoOrigin);
-  const passesPreflight = await core.group(
-    "Check If Action Should Run",
-    runPreflight
-  );
+  const { passedPreflight, githubEventName, githubEventData } =
+    await core.group("Check If Action Should Run", runPreflight);
   core.endGroup();
 
-  if (!passesPreflight) {
+  if (!passedPreflight) {
     return;
   }
 
   await core.group("Generate Map Data", async () => runCodeseeMap(config));
   await core.group("Upload Map to Codesee Server", async () =>
-    runCodeseeMapUpload(config, origin)
+    runCodeseeMapUpload(config, origin, githubEventName, githubEventData)
   );
 }
 
