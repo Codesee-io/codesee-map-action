@@ -1,6 +1,23 @@
+const fs = require("fs");
 const core = require("@actions/core");
 const exec = require("@actions/exec");
 const simpleGit = require("simple-git");
+
+/**
+ * Asynchronously reads the contents of a file.
+ * @param {string} filePath - The path of the file you want to read.
+ * @returns {Promise<string>} The contents of the file as a string.
+ */
+async function readFile(filePath) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(filePath, { encoding: "utf-8" }, (err, data) => {
+      if (err) {
+        return reject(err);
+      }
+      resolve(data.toString());
+    });
+  });
+}
 
 function setupEnv() {
   core.setSecret("api_token");
@@ -14,13 +31,26 @@ function getConfig() {
   const supportTypescript = core.getBooleanInput("support_typescript", {
     required: false,
   });
-  const githubRef = core.getInput("github_ref", { required: false });
+
+  // UNIX convention is that command line arguments should take precedence
+  // over environment variables. We're breaking from this convention below
+  // because when this action runs on a pull request, we want to use the
+  // value of process.env.GITHUB_HEAD_REF in preference to the input
+  // github_ref. The value in github_ref is also available in
+  // process.env.GITHUB_REF, but it may be an error to pass an input in to
+  // an action that is not used.
+  // TODO: CODESEE-1474 see if we can avoid getting github_ref from our inputs.
+  const githubRef =
+    process.env.GITHUB_HEAD_REF ||
+    core.getInput("github_ref", { required: false });
+  const githubBaseRef = process.env.GITHUB_BASE_REF;
 
   return {
     apiToken,
     webpackConfigPath:
       webpackConfigPath === "__NULL__" ? undefined : webpackConfigPath,
     supportTypescript,
+    githubBaseRef,
     githubRef,
   };
 }
@@ -46,6 +76,35 @@ async function getRepoOrigin() {
   return origin;
 }
 
+async function getEventData() {
+  const githubEventName = process.env.GITHUB_EVENT_NAME;
+  let githubEventData = {};
+
+  try {
+    githubEventData = JSON.parse(await readFile(process.env.GITHUB_EVENT_PATH));
+  } catch (e) {
+    // No-op, we just return empty githubEventData
+  }
+
+  return { githubEventName, githubEventData };
+}
+
+async function runPreflight(githubEventName, githubEventData) {
+  if (githubEventName === "pull_request") {
+    const headRepoFullName = githubEventData.pull_request.head.repo.full_name;
+    const baseRepoFullName = githubEventData.pull_request.base.repo.full_name;
+
+    if (headRepoFullName !== baseRepoFullName) {
+      core.info(
+        `Pull request head repository ${headRepoFullName} differs from base repository ${baseRepoFullName}. Not running.`
+      );
+      return false;
+    }
+  }
+
+  return true;
+}
+
 async function runCodeseeMap(config) {
   const args = ["codesee", "map", "-o", "codesee.map.json"];
 
@@ -60,8 +119,20 @@ async function runCodeseeMap(config) {
   return runExitCode;
 }
 
-async function runCodeseeMapUpload(config, origin) {
-  const refArguments = config.githubRef ? ["-f", config.githubRef] : [];
+async function runCodeseeMapUpload(
+  config,
+  origin,
+  githubEventName,
+  githubEventData
+) {
+  const additionalArguments = config.githubRef ? ["-f", config.githubRef] : [];
+
+  if (githubEventName === "pull_request") {
+    additionalArguments.push("-b", config.githubBaseRef);
+    additionalArguments.push("-s", githubEventData.pull_request.base.sha);
+    additionalArguments.push("-p", githubEventData.number.toString());
+  }
+
   const args = [
     "codesee",
     "upload",
@@ -71,7 +142,7 @@ async function runCodeseeMapUpload(config, origin) {
     `https://github.com/${origin}`,
     "-a",
     config.apiToken,
-    ...refArguments,
+    ...additionalArguments,
     "codesee.map.json",
   ];
 
@@ -88,11 +159,20 @@ async function main() {
   core.debug(config);
 
   const origin = await core.group("Get Repo Origin", getRepoOrigin);
+  const { githubEventName, githubEventData } = await getEventData();
+  const passedPreflight = await core.group(
+    "Check If Action Should Run",
+    async () => runPreflight(githubEventName, githubEventData)
+  );
   core.endGroup();
+
+  if (!passedPreflight) {
+    return;
+  }
 
   await core.group("Generate Map Data", async () => runCodeseeMap(config));
   await core.group("Upload Map to Codesee Server", async () =>
-    runCodeseeMapUpload(config, origin)
+    runCodeseeMapUpload(config, origin, githubEventName, githubEventData)
   );
 }
 
