@@ -7647,6 +7647,9 @@ function getConfig() {
   const supportTypescript = core.getBooleanInput("support_typescript", {
     required: false,
   });
+  core.info(`GITHUB_REF: ${process.env.GITHUB_REF}`);
+  core.info(`GITHUB_BASE_REF: ${process.env.GITHUB_BASE_REF}`);
+  core.info(`GITHUB_HEAD_REF: ${process.env.GITHUB_HEAD_REF}`);
   const githubRef = core.getInput("github_ref", { required: false });
 
   return {
