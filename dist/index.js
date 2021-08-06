@@ -7647,6 +7647,15 @@ function getConfig() {
   const supportTypescript = core.getBooleanInput("support_typescript", {
     required: false,
   });
+
+  // UNIX convention is that command line arguments should take precedence
+  // over environment variables. We're breaking from this convention below
+  // because when this action runs on a pull request, we want to use the
+  // value of process.env.GITHUB_HEAD_REF in preference to the input
+  // github_ref. The value in github_ref is also available in
+  // process.env.GITHUB_REF, but it may be an error to pass an input in to
+  // an action that is not used.
+  // TODO: CODESEE-1474 see if we can avoid getting github_ref from our inputs.
   const githubRef =
     process.env.GITHUB_HEAD_REF ||
     core.getInput("github_ref", { required: false });
