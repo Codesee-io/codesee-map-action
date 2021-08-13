@@ -18,10 +18,9 @@ async function collectInsight(config, insightType) {
     "insight",
     "--insightType",
     insightType,
-    "--repo",
-    `https://github.com/${config.origin}`,
     "-a",
     config.apiToken,
+    "-o",
     `codesee.${insightType}.json`,
   ];
   const runExitCode = await exec.exec("npx", args);
