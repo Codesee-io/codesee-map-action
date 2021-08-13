@@ -180,7 +180,7 @@ async function main() {
       runCodeseeMapUpload(config, githubEventName, githubEventData)
     );
   }
-  await core.group("Collect Insights", async () => insightsAction.run(config));
+  await insightsAction.run(config);
 }
 
 main()
