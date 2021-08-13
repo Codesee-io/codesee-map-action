@@ -2,6 +2,7 @@ const fs = require("fs");
 const core = require("@actions/core");
 const exec = require("@actions/exec");
 const simpleGit = require("simple-git");
+const insightsAction = require("./insights");
 
 /**
  * Asynchronously reads the contents of a file.
@@ -31,6 +32,9 @@ function getConfig() {
   const supportTypescript = core.getBooleanInput("support_typescript", {
     required: false,
   });
+  const skipUpload = core.getBooleanInput("skip_upload", {
+    required: false,
+  });
 
   // UNIX convention is that command line arguments should take precedence
   // over environment variables. We're breaking from this convention below
@@ -52,6 +56,8 @@ function getConfig() {
     supportTypescript,
     githubBaseRef,
     githubRef,
+    skipUpload,
+    ...insightsAction.getConfig(),
   };
 }
 
@@ -171,9 +177,14 @@ async function main() {
   }
 
   await core.group("Generate Map Data", async () => runCodeseeMap(config));
-  await core.group("Upload Map to Codesee Server", async () =>
-    runCodeseeMapUpload(config, origin, githubEventName, githubEventData)
-  );
+  if (config.skipUpload) {
+    core.info("Skipping map upload");
+  } else {
+    await core.group("Upload Map to Codesee Server", async () =>
+      runCodeseeMapUpload(config, origin, githubEventName, githubEventData)
+    );
+  }
+  await core.group("Collect Insights", async () => insightsAction.run(config));
 }
 
 main()
