@@ -7668,7 +7668,7 @@ async function collectInsight(config, insightType) {
     "--insightType",
     insightType,
     "--repo",
-    `https://github.com/${origin}`,
+    `https://github.com/${config.origin}`,
     "-a",
     config.apiToken,
     `codesee.${insightType}.json`,
@@ -7685,7 +7685,7 @@ async function uploadInsight(config, insightType) {
     "--type",
     "insight",
     "--repo",
-    `https://github.com/${origin}`,
+    `https://github.com/${config.origin}`,
     "-a",
     config.apiToken,
     `codesee.${insightType}.json`,
@@ -7963,12 +7963,7 @@ async function runCodeseeMap(config) {
   return runExitCode;
 }
 
-async function runCodeseeMapUpload(
-  config,
-  origin,
-  githubEventName,
-  githubEventData
-) {
+async function runCodeseeMapUpload(config, githubEventName, githubEventData) {
   const additionalArguments = config.githubRef ? ["-f", config.githubRef] : [];
 
   if (githubEventName === "pull_request") {
@@ -7983,7 +7978,7 @@ async function runCodeseeMapUpload(
     "--type",
     "map",
     "--repo",
-    `https://github.com/${origin}`,
+    `https://github.com/${config.origin}`,
     "-a",
     config.apiToken,
     ...additionalArguments,
@@ -8002,7 +7997,9 @@ async function main() {
   core.debug("CONFIG: ");
   core.debug(config);
 
-  const origin = await core.group("Get Repo Origin", getRepoOrigin);
+  config.origin = await core.group("Get Repo Origin", getRepoOrigin);
+  config.origin = origin;
+
   const { githubEventName, githubEventData } = await getEventData();
   const passedPreflight = await core.group(
     "Check If Action Should Run",
@@ -8019,7 +8016,7 @@ async function main() {
     core.info("Skipping map upload");
   } else {
     await core.group("Upload Map to Codesee Server", async () =>
-      runCodeseeMapUpload(config, origin, githubEventName, githubEventData)
+      runCodeseeMapUpload(config, githubEventName, githubEventData)
     );
   }
   await core.group("Collect Insights", async () => insightsAction.run(config));
