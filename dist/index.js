@@ -7696,13 +7696,13 @@ async function uploadInsight(config, insightType) {
 async function run(config) {
   let exitCode = 0;
   for (const insightType of INSIGHTS) {
-    exitCode += core.group(`Collecting ${insightType}`, () =>
+    exitCode += core.group(`Collecting ${insightType}`, async () =>
       collectInsight(insightType)
     );
     if (config.skipUpload) {
       core.info(`Skipping ${insightType} upload`);
     } else {
-      exitCode += core.group(`Uploading ${insightType}`, () =>
+      exitCode += core.group(`Uploading ${insightType}`, async () =>
         uploadInsight(config, insightType)
       );
     }
