@@ -160,7 +160,6 @@ async function main() {
   core.debug(config);
 
   config.origin = await core.group("Get Repo Origin", getRepoOrigin);
-  config.origin = origin;
 
   const { githubEventName, githubEventData } = await getEventData();
   const passedPreflight = await core.group(
