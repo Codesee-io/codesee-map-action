@@ -12,14 +12,12 @@ function getConfig() {
   return {};
 }
 
-async function collectInsight(config, insightType) {
+async function collectInsight(insightType) {
   const args = [
     "codesee",
     "insight",
     "--insightType",
     insightType,
-    "-a",
-    config.apiToken,
     "-o",
     `codesee.${insightType}.json`,
   ];
@@ -50,7 +48,7 @@ async function run(config) {
   let exitCode = 0;
   for (const insightType of INSIGHTS) {
     exitCode += core.group(`Collecting ${insightType}`, () =>
-      collectInsight(config, insightType)
+      collectInsight(insightType)
     );
     if (config.skipUpload) {
       core.info(`Skipping ${insightType} upload`);
