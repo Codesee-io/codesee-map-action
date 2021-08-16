@@ -17,3 +17,4 @@ jobs:
         with:
           api_token: Foo
           github_ref: ${{ github.ref }}
+          skip_upload: true
