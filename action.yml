@@ -1,18 +1,22 @@
-name: 'CodeSee Map'
-description: 'Generate a Dependency Map snapshot for CodeSee'
+name: "CodeSee Map"
+description: "Generate a Dependency Map snapshot for CodeSee"
 inputs:
   api_token:
     description: The CodeSee API Token for the user who owns the dependency map
     required: true
   webpack_config_path:
     description: The path relative to your repo root where your webpack config file is stored
-    default: '__NULL__'
+    default: "__NULL__"
   support_typescript:
     description: Should tsconfig.json be honored when traversing dependencies
     default: false
   github_ref:
     description: The github ref (value of $GITHUB_REF) which references the branch name being processed
     required: true
+  skip_upload:
+    description: Skips the upload steps for testing purposes
+    required: false
+    default: false
 runs:
-  using: 'node12'
-  main: 'dist/index.js'
+  using: "node12"
+  main: "dist/index.js"
