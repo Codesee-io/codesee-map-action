@@ -7696,13 +7696,18 @@ async function uploadInsight(config, insightType) {
 async function run(config) {
   let exitCode = 0;
   for (const insightType of INSIGHTS) {
-    exitCode += core.group(`Collecting ${insightType}`, async () =>
-      collectInsight(insightType)
+    const stepExitCode = await core.group(
+      `Collecting ${insightType}`,
+      async () => collectInsight(insightType)
     );
-    if (config.skipUpload) {
+    exitCode += stepExitCode;
+    if (stepExitCode !== 0) {
+      core.error("Generation Step failed with exit code ${stepExitCode}");
+    } else if (config.skipUpload) {
       core.info(`Skipping ${insightType} upload`);
+      await exec.exec(`cat codesee.${insightType}.json`);
     } else {
-      exitCode += core.group(`Uploading ${insightType}`, async () =>
+      exitCode += await core.group(`Uploading ${insightType}`, async () =>
         uploadInsight(config, insightType)
       );
     }
