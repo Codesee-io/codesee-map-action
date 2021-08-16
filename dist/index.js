@@ -7705,7 +7705,6 @@ async function run(config) {
       core.error("Generation Step failed with exit code ${stepExitCode}");
     } else if (config.skipUpload) {
       core.info(`Skipping ${insightType} upload`);
-      await exec.exec(`cat codesee.${insightType}.json`);
     } else {
       exitCode += await core.group(`Uploading ${insightType}`, async () =>
         uploadInsight(config, insightType)
