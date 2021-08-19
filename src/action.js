@@ -61,6 +61,17 @@ function getConfig() {
   };
 }
 
+// We need to checkout the HEAD ref because the actions/checkout@v2 action
+// checks out the GitHub ref for the pull request, which is pull/<number>/merge.
+// This ref points to a merge commit that's on top of the user's actual commits.
+// This is important because if you use `git rev-parse HEAD`, you'll get a
+// commit SHA that's different than the HEAD SHA. This difference causes issues
+// downstream (e.g. when commenting diagram images to PRs).
+async function checkoutHeadRef({ githubRef }) {
+  const git = simpleGit(".");
+  await git.checkout(githubRef);
+}
+
 async function getRepoOrigin() {
   const git = simpleGit(".");
   const remotes = await git.getRemotes(true);
@@ -160,6 +171,8 @@ async function main() {
   core.debug(config);
 
   config.origin = await core.group("Get Repo Origin", getRepoOrigin);
+
+  await core.group("Checkout HEAD Ref", async () => checkoutHeadRef(config))
 
   const { githubEventName, githubEventData } = await getEventData();
   const passedPreflight = await core.group(
