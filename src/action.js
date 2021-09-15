@@ -193,6 +193,12 @@ async function main() {
       runCodeseeMapUpload(config, githubEventName, githubEventData)
     );
   }
+
+  if (githubEventName === "pull_request") {
+    core.info("Running on a pull request so skipping insight collection");
+    return;
+  }
+
   await insightsAction.run(config);
 }
 
