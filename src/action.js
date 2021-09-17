@@ -25,7 +25,13 @@ function setupEnv() {
 }
 
 function getConfig() {
-  const apiToken = core.getInput("api_token", { required: true });
+  let apiToken;
+  try {
+    apiToken = core.getInput("api_token", { required: true });
+  } catch (error) {
+    console.warn("\n\n===============================\nError accessing your API Token.\nPlease make sure the CODESEE_ARCH_DIAG_API_TOKEN is set correctly in your *repository* secrets (not environment secrets).\nIf you need a new API Token, please go to app.codesee.io/maps and create a new map.\nThis will generate a new token for you.\n===============================\n\n");
+    throw error;
+  }
   const webpackConfigPath = core.getInput("webpack_config_path", {
     required: false,
   });
