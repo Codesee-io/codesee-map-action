@@ -29,7 +29,9 @@ function getConfig() {
   try {
     apiToken = core.getInput("api_token", { required: true });
   } catch (error) {
-    console.warn("\n\n===============================\nError accessing your API Token.\nPlease make sure the CODESEE_ARCH_DIAG_API_TOKEN is set correctly in your *repository* secrets (not environment secrets).\nIf you need a new API Token, please go to app.codesee.io/maps and create a new map.\nThis will generate a new token for you.\n===============================\n\n");
+    console.warn(
+      "\n\n===============================\nError accessing your API Token.\nPlease make sure the CODESEE_ARCH_DIAG_API_TOKEN is set correctly in your *repository* secrets (not environment secrets).\nIf you need a new API Token, please go to app.codesee.io/maps and create a new map.\nThis will generate a new token for you.\n===============================\n\n"
+    );
     throw error;
   }
   const webpackConfigPath = core.getInput("webpack_config_path", {
@@ -137,6 +139,7 @@ async function runCodeseeMap(config) {
   if (config.supportTypescript) {
     args.push("--typescript");
   }
+  args.push(process.cwd());
   const runExitCode = await exec.exec("npx", args);
 
   return runExitCode;
@@ -178,7 +181,7 @@ async function main() {
 
   config.origin = await core.group("Get Repo Origin", getRepoOrigin);
 
-  await core.group("Checkout HEAD Ref", async () => checkoutHeadRef(config))
+  await core.group("Checkout HEAD Ref", async () => checkoutHeadRef(config));
 
   const { githubEventName, githubEventData } = await getEventData();
   const passedPreflight = await core.group(
