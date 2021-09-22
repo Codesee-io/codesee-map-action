@@ -24,6 +24,13 @@ function setupEnv() {
   core.setSecret("api_token");
 }
 
+function isPullRequestEvent(githubEventName) {
+  // We currently listen for "pull_request_target" since that will allow secrets
+  // to be passed in for forked repos, but we used to listen for "pull_request",
+  // so we keep it here for backwards compatibility.
+  return githubEventName === "pull_request" || githubEventName === "pull_request_target";
+}
+
 function getConfig() {
   let apiToken;
   try {
@@ -44,6 +51,11 @@ function getConfig() {
     required: false,
   });
 
+  // The origin is in the format of "<owner>/<repo>". This environment variable
+  // seems to have the correct value for both branch PRs and fork PRs (this
+  // needs to be the base repo, not the fork repo).
+  const origin = process.env.GITHUB_REPOSITORY;
+
   // UNIX convention is that command line arguments should take precedence
   // over environment variables. We're breaking from this convention below
   // because when this action runs on a pull request, we want to use the
@@ -62,6 +74,7 @@ function getConfig() {
     webpackConfigPath:
       webpackConfigPath === "__NULL__" ? undefined : webpackConfigPath,
     supportTypescript,
+    origin,
     githubBaseRef,
     githubRef,
     skipUpload,
@@ -80,27 +93,6 @@ async function checkoutHeadRef({ githubRef }) {
   await git.checkout(githubRef);
 }
 
-async function getRepoOrigin() {
-  const git = simpleGit(".");
-  const remotes = await git.getRemotes(true);
-  const maybeOrigin = remotes.filter((r) => r.name === "origin");
-  if (maybeOrigin.length !== 1) {
-    throw new Error("Unable to determine origin remote");
-  }
-
-  const originFullUrl = maybeOrigin[0].refs.fetch || maybeOrigin[0].refs.push;
-
-  // origins from github look like either `git@github.com:<owner name>/<repo name>`
-  // or https://github.com/<owner name>/<repo name>`
-  // and we only care about owner name and repo name to be able to find their
-  // records
-  const origin = originFullUrl
-    .replace("git@github.com:", "")
-    .replace("https://github.com/", "");
-  core.info(`Using github repo ${origin} for the origin`);
-  return origin;
-}
-
 async function getEventData() {
   const githubEventName = process.env.GITHUB_EVENT_NAME;
   let githubEventData = {};
@@ -112,22 +104,6 @@ async function getEventData() {
   }
 
   return { githubEventName, githubEventData };
-}
-
-async function runPreflight(githubEventName, githubEventData) {
-  if (githubEventName === "pull_request") {
-    const headRepoFullName = githubEventData.pull_request.head.repo.full_name;
-    const baseRepoFullName = githubEventData.pull_request.base.repo.full_name;
-
-    if (headRepoFullName !== baseRepoFullName) {
-      core.info(
-        `Pull request head repository ${headRepoFullName} differs from base repository ${baseRepoFullName}. Not running.`
-      );
-      return false;
-    }
-  }
-
-  return true;
 }
 
 async function runCodeseeMap(config) {
@@ -148,7 +124,7 @@ async function runCodeseeMap(config) {
 async function runCodeseeMapUpload(config, githubEventName, githubEventData) {
   const additionalArguments = config.githubRef ? ["-f", config.githubRef] : [];
 
-  if (githubEventName === "pull_request") {
+  if (isPullRequestEvent(githubEventName)) {
     additionalArguments.push("-b", config.githubBaseRef);
     additionalArguments.push("-s", githubEventData.pull_request.base.sha);
     additionalArguments.push("-p", githubEventData.number.toString());
@@ -179,20 +155,10 @@ async function main() {
   core.debug("CONFIG: ");
   core.debug(config);
 
-  config.origin = await core.group("Get Repo Origin", getRepoOrigin);
-
   await core.group("Checkout HEAD Ref", async () => checkoutHeadRef(config));
 
   const { githubEventName, githubEventData } = await getEventData();
-  const passedPreflight = await core.group(
-    "Check If Action Should Run",
-    async () => runPreflight(githubEventName, githubEventData)
-  );
   core.endGroup();
-
-  if (!passedPreflight) {
-    return;
-  }
 
   await core.group("Generate Map Data", async () => runCodeseeMap(config));
   if (config.skipUpload) {
@@ -203,7 +169,7 @@ async function main() {
     );
   }
 
-  if (githubEventName === "pull_request") {
+  if (isPullRequestEvent(githubEventName)) {
     core.info("Running on a pull request so skipping insight collection");
     return;
   }
