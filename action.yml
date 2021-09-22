@@ -1,5 +1,6 @@
 name: "CodeSee Map"
 description: "Generate a Dependency Map snapshot for CodeSee"
+author: CodeSee
 inputs:
   api_token:
     description: The CodeSee API Token for the user who owns the dependency map
@@ -20,3 +21,6 @@ inputs:
 runs:
   using: "node12"
   main: "dist/index.js"
+branding:
+  icon: map
+  color: purple
