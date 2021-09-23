@@ -28,7 +28,41 @@ function isPullRequestEvent(githubEventName) {
   // We currently listen for "pull_request_target" since that will allow secrets
   // to be passed in for forked repos, but we used to listen for "pull_request",
   // so we keep it here for backwards compatibility.
-  return githubEventName === "pull_request" || githubEventName === "pull_request_target";
+  return (
+    githubEventName === "pull_request" ||
+    githubEventName === "pull_request_target"
+  );
+}
+
+async function needsInsights(config) {
+  const args = [
+    "codesee",
+    "metadata",
+    "--repo",
+    `https://github.com/${config.origin}`,
+    "-a",
+    config.apiToken,
+    "-o",
+    "codesee.metadata.json",
+  ];
+
+  const runExitCode = await exec.exec("npx", args);
+  if (runExitCode !== 0) {
+    // If we can't get the metadata, assume that we need insights!
+    return true;
+  }
+
+  try {
+    const output = JSON.parse(
+      await fs.promises.readFile("codesee.metadata.json", "utf-8")
+    );
+    return output.insights.length === 0;
+  } catch (e) {
+    console.warn(
+      `\n\n Unable to read metadata for repo, assuming we need insights: ${e.message}`
+    );
+    return true;
+  }
 }
 
 function getConfig() {
@@ -169,7 +203,7 @@ async function main() {
     );
   }
 
-  if (isPullRequestEvent(githubEventName)) {
+  if (isPullRequestEvent(githubEventName) && !needsInsights(config)) {
     core.info("Running on a pull request so skipping insight collection");
     return;
   }
