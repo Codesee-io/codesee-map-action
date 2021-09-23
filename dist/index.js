@@ -7897,7 +7897,7 @@ async function needsInsights(config) {
     );
     return output.insights.length === 0;
   } catch (e) {
-    console.warn(
+    core.warning(
       `\n\n Unable to read metadata for repo, assuming we need insights: ${e.message}`
     );
     return true;
@@ -7909,7 +7909,7 @@ function getConfig() {
   try {
     apiToken = core.getInput("api_token", { required: true });
   } catch (error) {
-    console.warn(
+    core.warning(
       "\n\n===============================\nError accessing your API Token.\nPlease make sure the CODESEE_ARCH_DIAG_API_TOKEN is set correctly in your *repository* secrets (not environment secrets).\nIf you need a new API Token, please go to app.codesee.io/maps and create a new map.\nThis will generate a new token for you.\n===============================\n\n"
     );
     throw error;
@@ -8042,7 +8042,7 @@ async function main() {
     );
   }
 
-  if (isPullRequestEvent(githubEventName) && !needsInsights(config)) {
+  if (isPullRequestEvent(githubEventName) && !(await needsInsights(config))) {
     core.info("Running on a pull request so skipping insight collection");
     return;
   }
