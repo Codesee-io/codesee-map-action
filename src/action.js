@@ -34,6 +34,13 @@ function isPullRequestEvent(githubEventName) {
   );
 }
 
+function isForkedPullRequestEvent(githubEventName, githubEventData) {
+  return (
+    isPullRequestEvent(githubEventName) &&
+    githubEventData.pull_request.head.repo.fork
+  );
+}
+
 async function needsInsights(config) {
   const args = [
     "codesee",
@@ -140,8 +147,11 @@ async function getEventData() {
   return { githubEventName, githubEventData };
 }
 
-async function runCodeseeMap(config) {
+async function runCodeseeMap(config, excludeLangs) {
   const args = ["codesee", "map", "-o", "codesee.map.json"];
+  if (excludeLangs) {
+    args.push("-x", excludeLangs.join(","));
+  }
 
   if (config.webpackConfigPath) {
     args.push("-w", config.webpackConfigPath);
@@ -194,7 +204,14 @@ async function main() {
   const { githubEventName, githubEventData } = await getEventData();
   core.endGroup();
 
-  await core.group("Generate Map Data", async () => runCodeseeMap(config));
+  await core.group("Generate Map Data", async () => {
+    const excludeLangs = [];
+    if (isForkedPullRequestEvent(githubEventName, githubEventData)) {
+      core.info("Detected Forked PR, disabling python");
+      excludeLangs.push("python");
+    }
+    return await runCodeseeMap(config, excludeLangs);
+  });
   if (config.skipUpload) {
     core.info("Skipping map upload");
   } else {
