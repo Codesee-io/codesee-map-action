@@ -7988,7 +7988,7 @@ async function getEventData() {
 
 async function runCodeseeMap(config, excludeLangs) {
   const args = ["codesee", "map", "-o", "codesee.map.json"];
-  if (excludeLangs) {
+  if (excludeLangs && excludeLangs.length > 0) {
     args.push("-x", excludeLangs.join(","));
   }
 
