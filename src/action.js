@@ -209,6 +209,8 @@ async function main() {
     if (isForkedPullRequestEvent(githubEventName, githubEventData)) {
       core.info("Detected Forked PR, disabling python");
       excludeLangs.push("python");
+    } else if (isPullRequestEvent(githubEventName)) {
+      core.info("Detected a non-Forked PR, allowing all languages");
     }
     return await runCodeseeMap(config, excludeLangs);
   });
