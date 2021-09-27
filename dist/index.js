@@ -7880,6 +7880,15 @@ function isForkedPullRequestEvent(githubEventName, githubEventData) {
   );
 }
 
+function isInsecureConfiguration(config) {
+  // This checks to see if we are in an insecure configuration.
+  // If we are running maps, there is a possibility that user-supplied
+  // code may run. This is only possible with Python right now.
+  // If that happens, we want to disable Python so this check allows
+  // us to check if that situation is present.
+  return config.apiToken && config.languages.python;
+}
+
 async function needsInsights(config) {
   const args = [
     "codesee",
@@ -7912,15 +7921,8 @@ async function needsInsights(config) {
 }
 
 function getConfig() {
-  let apiToken;
-  try {
-    apiToken = core.getInput("api_token", { required: true });
-  } catch (error) {
-    core.warning(
-      "\n\n===============================\nError accessing your API Token.\nPlease make sure the CODESEE_ARCH_DIAG_API_TOKEN is set correctly in your *repository* secrets (not environment secrets).\nIf you need a new API Token, please go to app.codesee.io/maps and create a new map.\nThis will generate a new token for you.\n===============================\n\n"
-    );
-    throw error;
-  }
+  const apiToken = core.getInput("api_token", { required: false });
+
   const webpackConfigPath = core.getInput("webpack_config_path", {
     required: false,
   });
@@ -7930,6 +7932,10 @@ function getConfig() {
   const skipUpload = core.getBooleanInput("skip_upload", {
     required: false,
   });
+  const step = core.getInput("step", { required: false }) || "legacy";
+  const languages = JSON.stringify(
+    core.getInput("languages", { required: false }) || "{}"
+  );
 
   // The origin is in the format of "<owner>/<repo>". This environment variable
   // seems to have the correct value for both branch PRs and fork PRs (this
@@ -7958,6 +7964,7 @@ function getConfig() {
     githubBaseRef,
     githubRef,
     skipUpload,
+    step,
     ...insightsAction.getConfig(),
   };
 }
@@ -8031,7 +8038,7 @@ async function runCodeseeMapUpload(config, githubEventName, githubEventData) {
   return runExitCode;
 }
 
-async function main() {
+async function setup() {
   core.startGroup("Setup");
   setupEnv();
   const config = getConfig();
@@ -8043,16 +8050,35 @@ async function main() {
   const { githubEventName, githubEventData } = await getEventData();
   core.endGroup();
 
+  return { config, githubEventName, githubEventData };
+}
+
+async function generate(data) {
+  const { config, githubEventName, githubEventData } = data;
+
   await core.group("Generate Map Data", async () => {
     const excludeLangs = [];
-    if (isForkedPullRequestEvent(githubEventName, githubEventData)) {
-      core.info("Detected Forked PR, disabling python");
+    if (
+      isForkedPullRequestEvent(githubEventName, githubEventData) &&
+      isInsecureConfiguration(config)
+    ) {
+      core.info(
+        "Detected Forked PR with potential insecure configuration, disabling python"
+      );
+      core.info(
+        "Consider updating your workflow to the latest version from CodeSee."
+      );
       excludeLangs.push("python");
     } else if (isPullRequestEvent(githubEventName)) {
       core.info("Detected a non-Forked PR, allowing all languages");
     }
     return await runCodeseeMap(config, excludeLangs);
   });
+}
+
+async function upload(data) {
+  const { config, githubEventName, githubEventData } = data;
+
   if (config.skipUpload) {
     core.info("Skipping map upload");
   } else {
@@ -8060,13 +8086,50 @@ async function main() {
       runCodeseeMapUpload(config, githubEventName, githubEventData)
     );
   }
+}
 
+async function insights(data) {
+  const { config, githubEventName } = data;
   if (isPullRequestEvent(githubEventName) && !(await needsInsights(config))) {
     core.info("Running on a pull request so skipping insight collection");
     return;
   }
 
   await insightsAction.run(config);
+}
+
+async function requireApiToken(data) {
+  if (!data.config.apiToken) {
+    core.warning(
+      "\n\n===============================\nError accessing your API Token.\nPlease make sure the CODESEE_ARCH_DIAG_API_TOKEN is set correctly in your *repository* secrets (not environment secrets).\nIf you need a new API Token, please go to app.codesee.io/maps and create a new map.\nThis will generate a new token for you.\n===============================\n\n"
+    );
+    throw new Error("Api Token Required to continue");
+  }
+}
+
+async function main() {
+  const stepMap = new Map([
+    ["map", [generate]],
+    ["mapUpload", [requireApiToken, upload]],
+    ["insights", [requireApiToken, insights]],
+    ["legacy", [requireApiToken, generate, upload, insights]],
+  ]);
+  const data = await setup();
+  const step = data.config.step;
+
+  if (!stepMap.has(step)) {
+    core.error(
+      `Unable to find run configuration for ${step}. Should be one of ${[
+        ...stepMap.keys(),
+      ].join(", ")}`
+    );
+    return;
+  }
+
+  for (const stepFunc of stepMap.get(step)) {
+    core.info(`Running step ${stepFunc.name}`);
+    await stepFunc(data);
+  }
 }
 
 main()

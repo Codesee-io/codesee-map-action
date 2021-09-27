@@ -4,7 +4,7 @@ author: CodeSee
 inputs:
   api_token:
     description: The CodeSee API Token for the user who owns the dependency map
-    required: true
+    required: false
   webpack_config_path:
     description: The path relative to your repo root where your webpack config file is stored
     default: "__NULL__"
@@ -18,6 +18,15 @@ inputs:
     description: Skips the upload steps for testing purposes
     required: false
     default: false
+  step:
+    description: Which action step is this running
+    required: false
+    default: "legacy"
+  languages:
+    description: The output from Codesee-io/codesee-detect-languages-action
+    required: false
+    default: "{}"
+
 runs:
   using: "node12"
   main: "dist/index.js"
