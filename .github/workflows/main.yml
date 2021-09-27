@@ -22,8 +22,9 @@ jobs:
         uses: ./
         with:
           github_ref: ${{ github.ref }}
-          step: upload
+          step: mapUpload
           api_token: Foo
+          skip_upload: true
       - name: insights
         id: insights
         uses: ./
@@ -31,3 +32,4 @@ jobs:
           github_ref: ${{ github.ref }}
           step: insights
           api_token: Foo
+          skip_upload: true

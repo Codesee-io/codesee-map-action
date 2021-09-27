@@ -8099,9 +8099,9 @@ async function main() {
 
   if (!stepMap.has(step)) {
     core.error(
-      `Unable to find run configuration for ${step}. Should be one of ${stepMap
-        .keys()
-        .join(", ")}`
+      `Unable to find run configuration for ${step}. Should be one of ${[
+        ...stepMap.keys(),
+      ].join(", ")}`
     );
     return;
   }
