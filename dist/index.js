@@ -8085,9 +8085,11 @@ async function insights(data) {
 
 async function main() {
   const data = await setup();
-  await generate(data);
-  await upload(data);
-  await insights(data);
+  const steps = [generate, upload, insights];
+
+  for (const step in steps) {
+    await step(data);
+  }
 }
 
 main()
