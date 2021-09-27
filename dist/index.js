@@ -8104,7 +8104,7 @@ async function main() {
     return;
   }
 
-  for (const stepFunc in stepMap.get(step)) {
+  for (const stepFunc of stepMap.get(step)) {
     core.warning(
       `Running step ${stepFunc}\n${step}\n${JSON.stringify([
         ...stepMap.get(step),
