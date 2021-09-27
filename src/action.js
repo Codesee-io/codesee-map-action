@@ -91,6 +91,7 @@ function getConfig() {
   const skipUpload = core.getBooleanInput("skip_upload", {
     required: false,
   });
+  const step = core.getInput("step", { required: false }) || "legacy";
 
   // The origin is in the format of "<owner>/<repo>". This environment variable
   // seems to have the correct value for both branch PRs and fork PRs (this
@@ -119,6 +120,7 @@ function getConfig() {
     githubBaseRef,
     githubRef,
     skipUpload,
+    step,
     ...insightsAction.getConfig(),
   };
 }
@@ -245,11 +247,26 @@ async function insights(data) {
 }
 
 async function main() {
+  const stepMap = new Map([
+    ["map", [generate]],
+    ["mapUpload", [upload]],
+    ["insights", [insights]],
+    ["legacy", [generate, upload, insights]],
+  ]);
   const data = await setup();
-  const steps = [generate, upload, insights];
+  const step = data.config.step;
 
-  for (const step in steps) {
-    await step(data);
+  if (!stepMap.has(step)) {
+    core.error(
+      `Unable to find run configuration for ${step}. Should be one of ${stepMap
+        .keys()
+        .join(", ")}`
+    );
+    return;
+  }
+
+  for (const stepFunc in stepMap[step]) {
+    await stepFunc(data);
   }
 }
 
