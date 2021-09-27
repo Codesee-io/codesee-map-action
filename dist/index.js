@@ -8104,7 +8104,7 @@ async function main() {
     return;
   }
 
-  for (const stepFunc in stepMap[step]) {
+  for (const stepFunc in stepMap.get(step)) {
     await stepFunc(data);
   }
 }
