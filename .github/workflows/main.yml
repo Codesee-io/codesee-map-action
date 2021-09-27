@@ -21,6 +21,7 @@ jobs:
           github_ref: ${{ github.ref }}
           step: map
           languages: ${{ steps.detect-languages.outputs.languages}}
+          api_token: dont do this
       - name: upload
         id: upload
         uses: ./

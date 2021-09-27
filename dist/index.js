@@ -7880,6 +7880,15 @@ function isForkedPullRequestEvent(githubEventName, githubEventData) {
   );
 }
 
+function isInsecureConfiguration(config) {
+  // This checks to see if we are in an insecure configuration.
+  // If we are running maps, there is a possibility that user-supplied
+  // code may run. This is only possible with Python right now.
+  // If that happens, we want to disable Python so this check allows
+  // us to check if that situation is present.
+  return config.apiToken && config.languages.python;
+}
+
 async function needsInsights(config) {
   const args = [
     "codesee",
@@ -8049,8 +8058,16 @@ async function generate(data) {
 
   await core.group("Generate Map Data", async () => {
     const excludeLangs = [];
-    if (isForkedPullRequestEvent(githubEventName, githubEventData)) {
-      core.info("Detected Forked PR, disabling python");
+    if (
+      isForkedPullRequestEvent(githubEventName, githubEventData) &&
+      isInsecureConfiguration(config)
+    ) {
+      core.info(
+        "Detected Forked PR with potential insecure configuration, disabling python"
+      );
+      core.info(
+        "Consider updating your workflow to the latest version from CodeSee."
+      );
       excludeLangs.push("python");
     } else if (isPullRequestEvent(githubEventName)) {
       core.info("Detected a non-Forked PR, allowing all languages");
