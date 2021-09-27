@@ -11,10 +11,23 @@ jobs:
       - name: checkout
         id: checkout
         uses: actions/checkout@v2
-      - name: run
-        id: run
+      - name: map
+        id: map
         uses: ./
         with:
-          api_token: Foo
           github_ref: ${{ github.ref }}
-          skip_upload: true
+          step: map
+      - name: upload
+        id: upload
+        uses: ./
+        with:
+          github_ref: ${{ github.ref }}
+          step: upload
+          api_token: Foo
+      - name: insights
+        id: insights
+        uses: ./
+        with:
+          github_ref: ${{ github.ref }}
+          step: insights
+          api_token: Foo
