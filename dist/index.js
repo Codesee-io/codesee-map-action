@@ -8031,7 +8031,7 @@ async function runCodeseeMapUpload(config, githubEventName, githubEventData) {
   return runExitCode;
 }
 
-async function main() {
+async function setup() {
   core.startGroup("Setup");
   setupEnv();
   const config = getConfig();
@@ -8043,6 +8043,12 @@ async function main() {
   const { githubEventName, githubEventData } = await getEventData();
   core.endGroup();
 
+  return { config, githubEventName, githubEventData };
+}
+
+async function generate(data) {
+  const { config, githubEventName, githubEventData } = data;
+
   await core.group("Generate Map Data", async () => {
     const excludeLangs = [];
     if (isForkedPullRequestEvent(githubEventName, githubEventData)) {
@@ -8053,6 +8059,11 @@ async function main() {
     }
     return await runCodeseeMap(config, excludeLangs);
   });
+}
+
+async function upload(data) {
+  const { config, githubEventName, githubEventData } = data;
+
   if (config.skipUpload) {
     core.info("Skipping map upload");
   } else {
@@ -8060,13 +8071,23 @@ async function main() {
       runCodeseeMapUpload(config, githubEventName, githubEventData)
     );
   }
+}
 
+async function insights(data) {
+  const { config, githubEventName } = data;
   if (isPullRequestEvent(githubEventName) && !(await needsInsights(config))) {
     core.info("Running on a pull request so skipping insight collection");
     return;
   }
 
   await insightsAction.run(config);
+}
+
+async function main() {
+  const data = await setup();
+  await generate(data);
+  await upload(data);
+  await insights(data);
 }
 
 main()
