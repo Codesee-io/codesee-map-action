@@ -73,15 +73,8 @@ async function needsInsights(config) {
 }
 
 function getConfig() {
-  let apiToken;
-  try {
-    apiToken = core.getInput("api_token", { required: true });
-  } catch (error) {
-    core.warning(
-      "\n\n===============================\nError accessing your API Token.\nPlease make sure the CODESEE_ARCH_DIAG_API_TOKEN is set correctly in your *repository* secrets (not environment secrets).\nIf you need a new API Token, please go to app.codesee.io/maps and create a new map.\nThis will generate a new token for you.\n===============================\n\n"
-    );
-    throw error;
-  }
+  const apiToken = core.getInput("api_token", { required: false });
+
   const webpackConfigPath = core.getInput("webpack_config_path", {
     required: false,
   });
@@ -246,12 +239,21 @@ async function insights(data) {
   await insightsAction.run(config);
 }
 
+async function requireApiToken(data) {
+  if (!data.config.apiToken) {
+    core.warning(
+      "\n\n===============================\nError accessing your API Token.\nPlease make sure the CODESEE_ARCH_DIAG_API_TOKEN is set correctly in your *repository* secrets (not environment secrets).\nIf you need a new API Token, please go to app.codesee.io/maps and create a new map.\nThis will generate a new token for you.\n===============================\n\n"
+    );
+    throw new Error("Api Token Required to continue");
+  }
+}
+
 async function main() {
   const stepMap = new Map([
     ["map", [generate]],
-    ["mapUpload", [upload]],
-    ["insights", [insights]],
-    ["legacy", [generate, upload, insights]],
+    ["mapUpload", [requireApiToken, upload]],
+    ["insights", [requireApiToken, insights]],
+    ["legacy", [generate, requireApiToken, upload, insights]],
   ]);
   const data = await setup();
   const step = data.config.step;
