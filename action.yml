@@ -20,7 +20,7 @@ inputs:
     default: false
   step:
     description: Which action step is this running
-    required: fales
+    required: false
     default: "legacy"
   languages:
     description: The output from Codesee-io/codesee-detect-languages-action
