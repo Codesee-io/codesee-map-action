@@ -8105,6 +8105,7 @@ async function main() {
   }
 
   for (const stepFunc in stepMap.get(step)) {
+    core.warning(`Running step ${stepFunc}`);
     await stepFunc(data);
   }
 }
