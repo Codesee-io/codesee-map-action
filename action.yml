@@ -22,6 +22,10 @@ inputs:
     description: Which action step is this running
     required: fales
     default: "legacy"
+  languages:
+    description: The output from Codesee-io/codesee-detect-languages-action
+    required: false
+    default: "{}"
 
 runs:
   using: "node12"

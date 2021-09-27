@@ -11,12 +11,16 @@ jobs:
       - name: checkout
         id: checkout
         uses: actions/checkout@v2
+      - name: detect languages
+        id: detect-languages
+        uses: Codesee-io/codesee-detect-languages-action@latest
       - name: map
         id: map
         uses: ./
         with:
           github_ref: ${{ github.ref }}
           step: map
+          languages: ${{ steps.detect-languages.outputs.languages}}
       - name: upload
         id: upload
         uses: ./

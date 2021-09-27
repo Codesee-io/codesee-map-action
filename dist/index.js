@@ -7924,6 +7924,9 @@ function getConfig() {
     required: false,
   });
   const step = core.getInput("step", { required: false }) || "legacy";
+  const languages = JSON.stringify(
+    core.getInput("languages", { required: false }) || "{}"
+  );
 
   // The origin is in the format of "<owner>/<repo>". This environment variable
   // seems to have the correct value for both branch PRs and fork PRs (this
