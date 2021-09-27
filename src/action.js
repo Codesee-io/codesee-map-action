@@ -266,11 +266,7 @@ async function main() {
   }
 
   for (const stepFunc of stepMap.get(step)) {
-    core.warning(
-      `Running step ${stepFunc}\n${step}\n${JSON.stringify([
-        ...stepMap.get(step),
-      ])}`
-    );
+    core.info(`Running step ${stepFunc.name}`);
     await stepFunc(data);
   }
 }
