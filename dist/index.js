@@ -8112,7 +8112,7 @@ async function main() {
     ["map", [generate]],
     ["mapUpload", [requireApiToken, upload]],
     ["insights", [requireApiToken, insights]],
-    ["legacy", [generate, requireApiToken, upload, insights]],
+    ["legacy", [requireApiToken, generate, upload, insights]],
   ]);
   const data = await setup();
   const step = data.config.step;
