@@ -124,6 +124,7 @@ function getConfig() {
     githubBaseRef,
     githubRef,
     skipUpload,
+    languages,
     step,
     ...insightsAction.getConfig(),
   };
