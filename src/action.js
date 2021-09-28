@@ -1,7 +1,6 @@
 const fs = require("fs");
 const core = require("@actions/core");
 const exec = require("@actions/exec");
-const simpleGit = require("simple-git");
 const insightsAction = require("./insights");
 
 /**
@@ -137,8 +136,10 @@ function getConfig() {
 // commit SHA that's different than the HEAD SHA. This difference causes issues
 // downstream (e.g. when commenting diagram images to PRs).
 async function checkoutHeadRef({ githubRef }) {
-  const git = simpleGit(".");
-  await git.checkout(githubRef);
+  const runExitCode = await exec.exec('git', ['checkout', githubRef]);
+  if (runExitCode !== 0) {
+    throw new Error(`git checkout ${githubRef} failed with exit code ${runExitCode}`)
+  }
 }
 
 async function getEventData() {
