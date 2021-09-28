@@ -2086,7 +2086,7 @@ async function checkoutHeadRef({ githubRef }) {
   }
 }
 
-async function getEventData(gethubEventName, eventDataPath) {
+async function getEventData(githubEventName, eventDataPath) {
   let githubEventData = {};
 
   try {
