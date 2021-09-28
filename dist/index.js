@@ -2029,11 +2029,11 @@ function getConfig() {
   );
 
   const eventDataPath =
-    code.getInput("with_event_data", { required: false }) ||
+    core.getInput("with_event_data", { required: false }) ||
     process.env.GITHUB_EVENT_PATH;
 
   const eventName =
-    code.getInput("with_event_name", { required: false }) ||
+    core.getInput("with_event_name", { required: false }) ||
     process.env.GITHUB_EVENT_NAME;
 
   // The origin is in the format of "<owner>/<repo>". This environment variable
