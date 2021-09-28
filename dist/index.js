@@ -2026,7 +2026,7 @@ function getConfig() {
     required: false,
   });
   const step = core.getInput("step", { required: false }) || "legacy";
-  const languages = JSON.stringify(
+  const languages = JSON.parse(
     core.getInput("languages", { required: false }) || "{}"
   );
 
