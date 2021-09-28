@@ -93,9 +93,17 @@ function getConfig() {
     required: false,
   });
   const step = core.getInput("step", { required: false }) || "legacy";
-  const languages = JSON.stringify(
+  const languages = JSON.parse(
     core.getInput("languages", { required: false }) || "{}"
   );
+
+  const eventDataPath =
+    core.getInput("with_event_data", { required: false }) ||
+    process.env.GITHUB_EVENT_PATH;
+
+  const eventName =
+    core.getInput("with_event_name", { required: false }) ||
+    process.env.GITHUB_EVENT_NAME;
 
   // The origin is in the format of "<owner>/<repo>". This environment variable
   // seems to have the correct value for both branch PRs and fork PRs (this
@@ -124,6 +132,9 @@ function getConfig() {
     githubBaseRef,
     githubRef,
     skipUpload,
+    languages,
+    eventDataPath,
+    eventName,
     step,
     ...insightsAction.getConfig(),
   };
@@ -136,18 +147,19 @@ function getConfig() {
 // commit SHA that's different than the HEAD SHA. This difference causes issues
 // downstream (e.g. when commenting diagram images to PRs).
 async function checkoutHeadRef({ githubRef }) {
-  const runExitCode = await exec.exec('git', ['checkout', githubRef]);
+  const runExitCode = await exec.exec("git", ["checkout", githubRef]);
   if (runExitCode !== 0) {
-    throw new Error(`git checkout ${githubRef} failed with exit code ${runExitCode}`)
+    throw new Error(
+      `git checkout ${githubRef} failed with exit code ${runExitCode}`
+    );
   }
 }
 
-async function getEventData() {
-  const githubEventName = process.env.GITHUB_EVENT_NAME;
+async function getEventData(githubEventName, eventDataPath) {
   let githubEventData = {};
 
   try {
-    githubEventData = JSON.parse(await readFile(process.env.GITHUB_EVENT_PATH));
+    githubEventData = JSON.parse(await readFile(eventDataPath));
   } catch (e) {
     // No-op, we just return empty githubEventData
   }
@@ -209,7 +221,10 @@ async function setup() {
 
   await core.group("Checkout HEAD Ref", async () => checkoutHeadRef(config));
 
-  const { githubEventName, githubEventData } = await getEventData();
+  const { githubEventName, githubEventData } = await getEventData(
+    config.eventName,
+    config.eventDataPath
+  );
   core.endGroup();
 
   return { config, githubEventName, githubEventData };
@@ -232,7 +247,7 @@ async function generate(data) {
       );
       excludeLangs.push("python");
     } else if (isPullRequestEvent(githubEventName)) {
-      core.info("Detected a non-Forked PR, allowing all languages");
+      core.info("Detected no insecure configuration, allowing all languages");
     }
     return await runCodeseeMap(config, excludeLangs);
   });
