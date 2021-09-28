@@ -2166,7 +2166,7 @@ async function generate(data) {
       );
       excludeLangs.push("python");
     } else if (isPullRequestEvent(githubEventName)) {
-      core.info("Detected a non-Forked PR, allowing all languages");
+      core.info("Detected no insecure configuration, allowing all languages");
     }
     return await runCodeseeMap(config, excludeLangs);
   });
