@@ -1,7 +1,12 @@
 const core = require("@actions/core");
 const exec = require("@actions/exec");
 
-const INSIGHTS = ["commitCountLast30Days", "lastCommitDate", "createDate"];
+const INSIGHTS = [
+  "commitCountLast30Days",
+  "lastCommitDate",
+  "createDate",
+  "linesOfCode",
+];
 
 module.exports = {
   run,
