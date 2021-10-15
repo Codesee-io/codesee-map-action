@@ -1750,7 +1750,12 @@ function copyFile(srcFile, destFile, force) {
 const core = __nccwpck_require__(559);
 const exec = __nccwpck_require__(860);
 
-const INSIGHTS = ["commitCountLast30Days", "lastCommitDate", "createDate"];
+const INSIGHTS = [
+  "commitCountLast30Days",
+  "lastCommitDate",
+  "createDate",
+  "linesOfCode",
+];
 
 module.exports = {
   run,
