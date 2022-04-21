@@ -179,6 +179,9 @@ async function runCodeseeMap(config, excludeLangs) {
   if (config.supportTypescript) {
     args.push("--typescript");
   }
+  if (config.apiToken) {
+    args.push("-a", config.apiToken);
+  }
   args.push(process.cwd());
   const runExitCode = await exec.exec("npx", args);
 
