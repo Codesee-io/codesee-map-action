@@ -182,6 +182,9 @@ async function runCodeseeMap(config, excludeLangs) {
   if (config.apiToken) {
     args.push("-a", config.apiToken);
   }
+
+  args.push("-r", `https://github.com/${config.origin}`);
+
   args.push(process.cwd());
   const runExitCode = await exec.exec("npx", args);
 
