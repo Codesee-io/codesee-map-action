@@ -183,7 +183,7 @@ async function runCodeseeMap(config, excludeLangs) {
     args.push("-a", config.apiToken);
   }
   if (config.languages) {
-    args.push("--languages", `'${JSON.stringify(config.languages)}'`);
+    args.push("--languages", JSON.stringify(config.languages));
   }
 
   args.push("-r", `https://github.com/${config.origin}`);
