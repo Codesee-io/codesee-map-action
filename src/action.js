@@ -51,7 +51,7 @@ function isInsecureConfiguration(config) {
 
 async function needsInsights(config) {
   const args = [
-    "codesee",
+    "codesee@latest",
     "metadata",
     "--repo",
     `https://github.com/${config.origin}`,
@@ -168,7 +168,7 @@ async function getEventData(githubEventName, eventDataPath) {
 }
 
 async function runCodeseeMap(config, excludeLangs) {
-  const args = ["codesee", "map", "-o", "codesee.map.json"];
+  const args = ["codesee@latest", "map", "-o", "codesee.map.json"];
   if (excludeLangs && excludeLangs.length > 0) {
     args.push("-x", excludeLangs.join(","));
   }
@@ -204,7 +204,7 @@ async function runCodeseeMapUpload(config, githubEventName, githubEventData) {
   }
 
   const args = [
-    "codesee",
+    "codesee@latest",
     "upload",
     "--type",
     "map",
