@@ -1,7 +1,7 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 117:
+/***/ 335:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -28,7 +28,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.issue = exports.issueCommand = void 0;
 const os = __importStar(__nccwpck_require__(37));
-const utils_1 = __nccwpck_require__(46);
+const utils_1 = __nccwpck_require__(144);
 /**
  * Commands
  *
@@ -100,7 +100,7 @@ function escapeProperty(s) {
 
 /***/ }),
 
-/***/ 559:
+/***/ 875:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -135,9 +135,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getState = exports.saveState = exports.group = exports.endGroup = exports.startGroup = exports.info = exports.warning = exports.error = exports.debug = exports.isDebug = exports.setFailed = exports.setCommandEcho = exports.setOutput = exports.getBooleanInput = exports.getMultilineInput = exports.getInput = exports.addPath = exports.setSecret = exports.exportVariable = exports.ExitCode = void 0;
-const command_1 = __nccwpck_require__(117);
-const file_command_1 = __nccwpck_require__(28);
-const utils_1 = __nccwpck_require__(46);
+const command_1 = __nccwpck_require__(335);
+const file_command_1 = __nccwpck_require__(674);
+const utils_1 = __nccwpck_require__(144);
 const os = __importStar(__nccwpck_require__(37));
 const path = __importStar(__nccwpck_require__(17));
 /**
@@ -401,7 +401,7 @@ exports.getState = getState;
 
 /***/ }),
 
-/***/ 28:
+/***/ 674:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -432,7 +432,7 @@ exports.issueCommand = void 0;
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const fs = __importStar(__nccwpck_require__(147));
 const os = __importStar(__nccwpck_require__(37));
-const utils_1 = __nccwpck_require__(46);
+const utils_1 = __nccwpck_require__(144);
 function issueCommand(command, message) {
     const filePath = process.env[`GITHUB_${command}`];
     if (!filePath) {
@@ -450,7 +450,7 @@ exports.issueCommand = issueCommand;
 
 /***/ }),
 
-/***/ 46:
+/***/ 144:
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -477,7 +477,7 @@ exports.toCommandValue = toCommandValue;
 
 /***/ }),
 
-/***/ 860:
+/***/ 782:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -513,7 +513,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getExecOutput = exports.exec = void 0;
 const string_decoder_1 = __nccwpck_require__(576);
-const tr = __importStar(__nccwpck_require__(690));
+const tr = __importStar(__nccwpck_require__(34));
 /**
  * Exec a command.
  * Output will be streamed to the live console.
@@ -587,7 +587,7 @@ exports.getExecOutput = getExecOutput;
 
 /***/ }),
 
-/***/ 690:
+/***/ 34:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -626,8 +626,8 @@ const os = __importStar(__nccwpck_require__(37));
 const events = __importStar(__nccwpck_require__(361));
 const child = __importStar(__nccwpck_require__(81));
 const path = __importStar(__nccwpck_require__(17));
-const io = __importStar(__nccwpck_require__(942));
-const ioUtil = __importStar(__nccwpck_require__(61));
+const io = __importStar(__nccwpck_require__(879));
+const ioUtil = __importStar(__nccwpck_require__(482));
 const timers_1 = __nccwpck_require__(512);
 /* eslint-disable @typescript-eslint/unbound-method */
 const IS_WINDOWS = process.platform === 'win32';
@@ -1212,7 +1212,7 @@ class ExecState extends events.EventEmitter {
 
 /***/ }),
 
-/***/ 61:
+/***/ 482:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -1396,7 +1396,7 @@ exports.getCmdPath = getCmdPath;
 
 /***/ }),
 
-/***/ 942:
+/***/ 879:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -1435,7 +1435,7 @@ const assert_1 = __nccwpck_require__(491);
 const childProcess = __importStar(__nccwpck_require__(81));
 const path = __importStar(__nccwpck_require__(17));
 const util_1 = __nccwpck_require__(837);
-const ioUtil = __importStar(__nccwpck_require__(61));
+const ioUtil = __importStar(__nccwpck_require__(482));
 const exec = util_1.promisify(childProcess.exec);
 const execFile = util_1.promisify(childProcess.execFile);
 /**
@@ -1744,11 +1744,11 @@ function copyFile(srcFile, destFile, force) {
 
 /***/ }),
 
-/***/ 206:
+/***/ 945:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-const core = __nccwpck_require__(559);
-const exec = __nccwpck_require__(860);
+const core = __nccwpck_require__(875);
+const exec = __nccwpck_require__(782);
 
 const INSIGHTS = [
   "commitCountLast30Days",
@@ -1937,9 +1937,9 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
 const fs = __nccwpck_require__(147);
-const core = __nccwpck_require__(559);
-const exec = __nccwpck_require__(860);
-const insightsAction = __nccwpck_require__(206);
+const core = __nccwpck_require__(875);
+const exec = __nccwpck_require__(782);
+const insightsAction = __nccwpck_require__(945);
 
 /**
  * Asynchronously reads the contents of a file.
@@ -1989,7 +1989,7 @@ function isInsecureConfiguration(config) {
 
 async function needsInsights(config) {
   const args = [
-    "codesee",
+    "codesee@latest",
     "metadata",
     "--repo",
     `https://github.com/${config.origin}`,
@@ -2106,7 +2106,7 @@ async function getEventData(githubEventName, eventDataPath) {
 }
 
 async function runCodeseeMap(config, excludeLangs) {
-  const args = ["codesee", "map", "-o", "codesee.map.json"];
+  const args = ["codesee@latest", "map", "-o", "codesee.map.json"];
   if (excludeLangs && excludeLangs.length > 0) {
     args.push("-x", excludeLangs.join(","));
   }
@@ -2142,7 +2142,7 @@ async function runCodeseeMapUpload(config, githubEventName, githubEventData) {
   }
 
   const args = [
-    "codesee",
+    "codesee@latest",
     "upload",
     "--type",
     "map",
