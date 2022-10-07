@@ -1987,6 +1987,8 @@ function isInsecureConfiguration(config) {
   return config.apiToken && config.languages.python;
 }
 
+const INSIGHTS_DISABLED = "Insights Disabled";
+
 async function needsInsights(config) {
   const args = [
     "codesee@latest",
@@ -2009,6 +2011,9 @@ async function needsInsights(config) {
     const output = JSON.parse(
       await fs.promises.readFile("codesee.metadata.json", "utf-8")
     );
+    if (output.insightsDisabled) {
+      return INSIGHTS_DISABLED;
+    }
     return output.insights.length === 0;
   } catch (e) {
     core.warning(
@@ -2214,7 +2219,11 @@ async function upload(data) {
 
 async function insights(data) {
   const { config, githubEventName } = data;
-  if (isPullRequestEvent(githubEventName) && !(await needsInsights(config))) {
+  const insightsNeeded = await needsInsights(config);
+  if (insightsNeeded === INSIGHTS_DISABLED) {
+    return;
+  }
+  if (isPullRequestEvent(githubEventName) && !insightsNeeded) {
     core.info("Running on a pull request so skipping insight collection");
     return;
   }
