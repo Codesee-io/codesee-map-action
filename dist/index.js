@@ -2219,12 +2219,14 @@ async function upload(data) {
 
 async function insights(data) {
   const { config, githubEventName } = data;
-  const insightsNeeded = await needsInsights(config);
-  if (insightsNeeded === INSIGHTS_DISABLED) {
+
+  if (isPullRequestEvent(githubEventName)) {
+    core.info("Running on a pull request so skipping insight collection");
     return;
   }
-  if (isPullRequestEvent(githubEventName) && !insightsNeeded) {
-    core.info("Running on a pull request so skipping insight collection");
+
+  const insightsNeeded = await needsInsights(config);
+  if (insightsNeeded === INSIGHTS_DISABLED) {
     return;
   }
 
