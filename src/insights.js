@@ -19,7 +19,7 @@ function getConfig() {
 
 async function collectInsight(insightType) {
   const args = [
-    "codesee",
+    "codesee@latest",
     "insight",
     "--insightType",
     insightType,
@@ -33,7 +33,7 @@ async function collectInsight(insightType) {
 
 async function uploadInsight(config, insightType) {
   const args = [
-    "codesee",
+    "codesee@latest",
     "upload",
     "--type",
     "insight",
