@@ -44,6 +44,10 @@ async function uploadInsight(config, insightType) {
     `codesee.${insightType}.json`,
   ];
 
+  if (config.insightsServiceUrl) {
+    args.push("--url", config.insightsServiceUrl);
+  }
+
   const runExitCode = await exec.exec("npx", args);
 
   return runExitCode;
