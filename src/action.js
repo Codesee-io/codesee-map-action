@@ -63,8 +63,8 @@ async function needsInsights(config) {
     "codesee.metadata.json",
   ];
 
-  if (config.insightsServiceUrl) {
-    args.push("--url", config.insightsServiceUrl);
+  if (config.codeseeUrl) {
+    args.push("--url", config.codeseeUrl);
   }
 
   const runExitCode = await exec.exec("npx", args);
@@ -114,7 +114,7 @@ function getConfig() {
     core.getInput("with_event_name", { required: false }) ||
     process.env.GITHUB_EVENT_NAME;
 
-  const insightsServiceUrl = core.getInput("insights_service_url", { required: false });
+  const codeseeUrl = core.getInput("insights_service_url", { required: false });
 
   // The origin is in the format of "<owner>/<repo>". This environment variable
   // seems to have the correct value for both branch PRs and fork PRs (this
@@ -146,7 +146,7 @@ function getConfig() {
     languages,
     eventDataPath,
     eventName,
-    insightsServiceUrl,
+    codeseeUrl,
     step,
     ...insightsAction.getConfig(),
   };
@@ -198,8 +198,8 @@ async function runCodeseeMap(config, excludeLangs) {
     args.push("--languages", JSON.stringify(config.languages));
   }
 
-  if (config.insightsServiceUrl) {
-    args.push("--url", config.insightsServiceUrl);
+  if (config.codeseeUrl) {
+    args.push("--url", config.codeseeUrl);
   }
 
   args.push("-r", `https://github.com/${config.origin}`);
@@ -232,8 +232,8 @@ async function runCodeseeMapUpload(config, githubEventName, githubEventData) {
     "codesee.map.json",
   ];
 
-  if (config.insightsServiceUrl) {
-    args.push("--url", config.insightsServiceUrl);
+  if (config.codeseeUrl) {
+    args.push("--url", config.codeseeUrl);
   }
 
   const runExitCode = await exec.exec("npx", args);
