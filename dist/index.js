@@ -4307,7 +4307,7 @@ function getConfig() {
     core.getInput("with_event_name", { required: false }) ||
     process.env.GITHUB_EVENT_NAME;
 
-  const codeseeUrl = core.getInput("insights_service_url", { required: false });
+  const codeseeUrl = core.getInput("codesee_url", { required: false });
 
   // The origin is in the format of "<owner>/<repo>". This environment variable
   // seems to have the correct value for both branch PRs and fork PRs (this
