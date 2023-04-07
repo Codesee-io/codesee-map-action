@@ -4004,6 +4004,10 @@ async function uploadInsight(config, insightType) {
     `codesee.${insightType}.json`,
   ];
 
+  if (config.codeseeUrl) {
+    args.push("--url", config.codeseeUrl);
+  }
+
   const runExitCode = await exec.exec("npx", args);
 
   return runExitCode;
@@ -4252,6 +4256,10 @@ async function needsInsights(config) {
     "codesee.metadata.json",
   ];
 
+  if (config.codeseeUrl) {
+    args.push("--url", config.codeseeUrl);
+  }
+
   const runExitCode = await exec.exec("npx", args);
   if (runExitCode !== 0) {
     // If we can't get the metadata, assume that we need insights!
@@ -4299,6 +4307,8 @@ function getConfig() {
     core.getInput("with_event_name", { required: false }) ||
     process.env.GITHUB_EVENT_NAME;
 
+  const codeseeUrl = core.getInput("codesee_url", { required: false });
+
   // The origin is in the format of "<owner>/<repo>". This environment variable
   // seems to have the correct value for both branch PRs and fork PRs (this
   // needs to be the base repo, not the fork repo).
@@ -4329,6 +4339,7 @@ function getConfig() {
     languages,
     eventDataPath,
     eventName,
+    codeseeUrl,
     step,
     ...insightsAction.getConfig(),
   };
@@ -4380,6 +4391,10 @@ async function runCodeseeMap(config, excludeLangs) {
     args.push("--languages", JSON.stringify(config.languages));
   }
 
+  if (config.codeseeUrl) {
+    args.push("--url", config.codeseeUrl);
+  }
+
   args.push("-r", `https://github.com/${config.origin}`);
 
   args.push(process.cwd());
@@ -4409,6 +4424,10 @@ async function runCodeseeMapUpload(config, githubEventName, githubEventData) {
     ...additionalArguments,
     "codesee.map.json",
   ];
+
+  if (config.codeseeUrl) {
+    args.push("--url", config.codeseeUrl);
+  }
 
   const runExitCode = await exec.exec("npx", args);
 
