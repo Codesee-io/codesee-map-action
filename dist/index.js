@@ -3998,7 +3998,7 @@ async function uploadInsight(config, insightType) {
     "--type",
     "insight",
     "--repo",
-    `https://github.com/${config.origin}`,
+    config.repoOrigin,
     "-a",
     config.apiToken,
     `codesee.${insightType}.json`,
@@ -4249,7 +4249,7 @@ async function needsInsights(config) {
     "codesee@latest",
     "metadata",
     "--repo",
-    `https://github.com/${config.origin}`,
+    config.repoOrigin,
     "-a",
     config.apiToken,
     "-o",
@@ -4309,10 +4309,23 @@ function getConfig() {
 
   const codeseeUrl = core.getInput("codesee_url", { required: false });
 
-  // The origin is in the format of "<owner>/<repo>". This environment variable
-  // seems to have the correct value for both branch PRs and fork PRs (this
-  // needs to be the base repo, not the fork repo).
-  const origin = process.env.GITHUB_REPOSITORY;
+  /**
+   * The owner and repository name. For example, "octocat/Hello-World". This
+   * environment variable seems to have the correct value for both branch PRs
+   * and fork PRs (this needs to be the base repo, not the fork repo).
+
+   * @see https://docs.github.com/en/codespaces/developing-in-codespaces/default-environment-variables-for-your-codespace
+   **/
+  const repoFullName = process.env.GITHUB_REPOSITORY;
+
+  /**
+   * Returns the URL of the GitHub server. For example, "https://github.com"
+   *
+   * @see https://docs.github.com/en/codespaces/developing-in-codespaces/default-environment-variables-for-your-codespace
+   **/
+  const githubOrigin = process.env.GITHUB_SERVER_URL;
+
+  const repoOrigin = githubOrigin + "/" + repoFullName;
 
   // UNIX convention is that command line arguments should take precedence
   // over environment variables. We're breaking from this convention below
@@ -4332,7 +4345,9 @@ function getConfig() {
     webpackConfigPath:
       webpackConfigPath === "__NULL__" ? undefined : webpackConfigPath,
     supportTypescript,
-    origin,
+    repoFullName,
+    githubOrigin,
+    repoOrigin,
     githubBaseRef,
     githubRef,
     skipUpload,
@@ -4395,7 +4410,7 @@ async function runCodeseeMap(config, excludeLangs) {
     args.push("--url", config.codeseeUrl);
   }
 
-  args.push("-r", `https://github.com/${config.origin}`);
+  args.push("--repo", config.repoOrigin);
 
   args.push(process.cwd());
   const runExitCode = await exec.exec("npx", args);
@@ -4418,7 +4433,7 @@ async function runCodeseeMapUpload(config, githubEventName, githubEventData) {
     "--type",
     "map",
     "--repo",
-    `https://github.com/${config.origin}`,
+    config.repoOrigin,
     "-a",
     config.apiToken,
     ...additionalArguments,
