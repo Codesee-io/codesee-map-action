@@ -4314,14 +4314,14 @@ function getConfig() {
    * environment variable seems to have the correct value for both branch PRs
    * and fork PRs (this needs to be the base repo, not the fork repo).
 
-   * @see https://docs.github.com/en/codespaces/developing-in-codespaces/default-environment-variables-for-your-codespace
+   * @see https://docs.github.com/en/actions/learn-github-actions/variables#default-environment-variables
    **/
   const repoFullName = process.env.GITHUB_REPOSITORY;
 
   /**
    * Returns the URL of the GitHub server. For example, "https://github.com"
    *
-   * @see https://docs.github.com/en/codespaces/developing-in-codespaces/default-environment-variables-for-your-codespace
+   * @see https://docs.github.com/en/actions/learn-github-actions/variables#default-environment-variables
    **/
   const githubOrigin = process.env.GITHUB_SERVER_URL;
 
