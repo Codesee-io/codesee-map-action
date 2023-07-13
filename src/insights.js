@@ -38,7 +38,7 @@ async function uploadInsight(config, insightType) {
     "--type",
     "insight",
     "--repo",
-    `https://github.com/${config.origin}`,
+    config.repoOrigin,
     "-a",
     config.apiToken,
     `codesee.${insightType}.json`,
