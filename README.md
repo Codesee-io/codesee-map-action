@@ -1,3 +1,6 @@
+# This repo has been archived
+It has been incorporated into a unified GitHub Action, [Codesee-io/codesee-action](https://github.com/Codesee-io/codesee-action)
+
 # codesee-map-action
 
 This action is part of the [CodeSee](https://codesee.io) ecosystem. It is used to push data into
